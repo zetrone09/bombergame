@@ -9,15 +9,25 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private CharacterController characterController;
 
     private int id;
+    private int score = 0;
     private Server server;
     private Vector3 target;
 
     private float speed = 1;
     private float gravitySpeed = 0;
     public int Id => id;
+    public int Score => score;
 
     public Vector3 Position => transform.position;
+
     public bool isUpdatePosition;
+    public bool isUpdateScore;
+
+    public void GetCoin()
+    {
+        score++;
+        isUpdateScore = true;
+    }
 
     // Start is called before the first frame update
     private void Start()
