@@ -13,9 +13,14 @@ public class ServerController : MonoBehaviour
     private CoinController coinController;
 
     [SerializeField]
+    private BombController bombController;
+
+    [SerializeField]
     private SpawnArea spawnArea;
 
     private Dictionary<int, PlayerController> playerControllers = new Dictionary<int, PlayerController>();
+    private List<int> playerRemoveIds = new List<int>();
+    private List<int> playerDeathIds = new List<int>();
 
     public Vector3 RandomSpawnPoint() => spawnArea.RandomSpawnPoint();
 
@@ -26,6 +31,13 @@ public class ServerController : MonoBehaviour
         playerController.Setup(id, server);
         playerControllers.Add(id, playerController);
         peerConnection.AddPlayer(playerController);
+    }
+
+    public void Remove(PlayerController playerController)
+    {
+        var playerId = playerController.Id;
+        playerRemoveIds.Add(playerId);
+        playerControllers.Remove(playerId);
     }
 
     public void UpdateData()
@@ -54,6 +66,11 @@ public class ServerController : MonoBehaviour
             }
         }
 
+        model.PlayerRemoveIds.AddRange(playerRemoveIds);
+        playerRemoveIds.Clear();
+        model.PlayerDeathIds.AddRange(playerDeathIds);
+        playerDeathIds.Clear();
+
         foreach (var pair in coinController.NewCoinPositions)
         {
             var id = pair.Key;
@@ -68,6 +85,24 @@ public class ServerController : MonoBehaviour
         }
         coinController.ResetDeletedCoins();
 
+        foreach (var bomb in bombController.newBombs)
+        {
+            var bombModel = new BombModel
+            {
+                CurrnetTime = bomb.CurrentTime,
+                Position = bomb.transform.position
+            };
+            model.NewBombs.Add(bombModel);
+        }
+        bombController.ResetNewBomb();
+
         server.SendAll(model);
+    }
+
+    public void Death(PlayerController playerController)
+    {
+        var id = playerController.Id;
+        playerControllers.Remove(id);
+        playerDeathIds.Add(id);
     }
 }

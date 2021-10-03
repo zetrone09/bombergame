@@ -1,8 +1,8 @@
 using LiteNetLib;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ModelToObjectMapper
 {
@@ -13,7 +13,24 @@ public class ModelToObjectMapper
     {
         //TODO [Model.CLASS_NAME] = callFunction,
         [MovePlayerModel.CLASS_NAME] = OnMovePlayer,
+        [LayBombModel.CLASS_NAME] = OnLayBomb,
     };
+
+    private void OnMovePlayer(PeerConnection peerConnection, JObject jObject)
+    {
+        var model = jObject.ToObject<MovePlayerModel>();
+        //Debug.Log($"{model.ClassName} : ( x : {model.Target.X}, y : {model.Target.Z} )");
+        peerConnection.Player.Move(model.Target.ToUnityVector3());
+    }
+
+    private void OnLayBomb(PeerConnection peerConnection, JObject jObject)
+    {
+        var model = jObject.ToObject<LayBombModel>();
+        if (model != null)
+        {
+            peerConnection.Player.LayBomb();
+        }
+    }
 
     public ModelToObjectMapper(ServerController serverController)
     {
@@ -23,7 +40,6 @@ public class ModelToObjectMapper
 
     public void DeserializeToFunction(NetPeer peer, string json)
     {
-        Debug.Log("DeserializeToFunction");
         var jObject = JObject.Parse(json);
         if (jObject.TryGetValue("ClassName", out var value))
         {
@@ -31,11 +47,5 @@ public class ModelToObjectMapper
             var peerConnection = peer.Tag as PeerConnection;
             Deserializes[className](peerConnection, jObject);
         }
-    }
-    private void OnMovePlayer(PeerConnection peerConnection, JObject jObject)
-    {
-        var model = jObject.ToObject<MovePlayerModel>();
-        //Debug.Log($"{model.ClassName} : ( x : {model.Target.X}, y : {model.Target.Z} )");
-        peerConnection.Player.Move(model.Target.ToUnityVector3());
     }
 }

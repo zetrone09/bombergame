@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ClientController : MonoBehaviour
 {
     [SerializeField] private PlayerController playerControllerPrefab;
     [SerializeField] private CoinController coinController;
+    [SerializeField] private BombController bombController;
     [SerializeField] private Client client;
     [SerializeField] private Text scoreText;
     private int playerId = -1;
@@ -39,6 +41,11 @@ public class ClientController : MonoBehaviour
         }
 
         OnCreateCoins(model.CreateCoins);
+
+        foreach (var bomb in model.Bombs)
+        {
+            bombController.Create(bomb);
+        }
     }
 
     private void OnCreateCoins(Dictionary<int, Vector3Model> createCoins)
@@ -63,6 +70,33 @@ public class ClientController : MonoBehaviour
             {
                 player.Move(playerPositionModel.Position);
             }
+        }
+
+        foreach (var removeId in model.PlayerRemoveIds)
+        {
+            if (playerControllers.TryGetValue(removeId, out var player))
+            {
+                player.Remove();
+                playerControllers.Remove(removeId);
+            }
+        }
+
+        foreach (var deathId in model.PlayerDeathIds)
+        {
+            if (deathId == playerId)
+            {
+                SceneManager.LoadScene("GameOverScene");
+            }
+            if (playerControllers.TryGetValue(deathId, out var player))
+            {
+                player.Remove();
+                playerControllers.Remove(deathId);
+            }
+        }
+
+        foreach (var bomb in model.NewBombs)
+        {
+            bombController.Create(bomb);
         }
 
         coinController.OnUpdate(model);

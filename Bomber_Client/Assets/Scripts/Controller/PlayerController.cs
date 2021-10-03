@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -38,15 +36,25 @@ public class PlayerController : MonoBehaviour
                 client.Send(new MovePlayerModel { Target = target });
             }
         }
+
+        if (Input.GetKeyUp(KeyCode.B))
+        {
+            client.Send(new LayBombModel());
+        }
     }
 
     public void SetCurrentPlayer()
     {
         isCurrentPlayer = true;
     }
+
     public void Move(Vector3 position)
     {
         transform.position = position;
     }
 
+    public void Remove()
+    {
+        Destroy(gameObject);
+    }
 }
