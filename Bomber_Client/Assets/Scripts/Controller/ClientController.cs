@@ -83,13 +83,9 @@ public class ClientController : MonoBehaviour
 
         foreach (var deathId in model.PlayerDeathIds)
         {
-            if (deathId == playerId)
-            {
-                SceneManager.LoadScene("GameOverScene");
-            }
             if (playerControllers.TryGetValue(deathId, out var player))
             {
-                player.Remove();
+                player.Death(deathId == playerId);
                 playerControllers.Remove(deathId);
             }
         }
